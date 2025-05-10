@@ -6,7 +6,7 @@ const gameBoard = (function () {
     const board = new Array(9);
 
     function isWithinBounds(position) {
-        return position >= 0 && position < board.length - 1;
+        return position >= 0 && position < board.length;
     }
 
     function getBoard() {
@@ -40,11 +40,11 @@ const game = (function (gameBoard, playerOne, playerTwo, onWinEventHandler, onTi
         [2, 4, 6]
     ];
 
-    const FIRST_WINNABLE_ROUND = 4;
-
     const LAST_ROUND = 8;
 
     let round = 0;
+
+    let gameFinished = false;
 
     function incrementRound() {
         round++;
@@ -60,18 +60,18 @@ const game = (function (gameBoard, playerOne, playerTwo, onWinEventHandler, onTi
     }
 
     function playRound(position) {
+        if (gameFinished) return;
         const roundPlayer = round % 2 === 0 ? playerOne : playerTwo;
+
         if (gameBoard.trySetTokenAt(roundPlayer.token, position)) {
-            if (round >= FIRST_WINNABLE_ROUND) {
-                const hasWinner = checkForWinner(roundPlayer.token)
-                if (hasWinner) {
-                    onWinEventHandler(roundPlayer);
-                } else {
-                    if (round === LAST_ROUND) {
-                        onTieEventHandler();
-                    }
-                }
+            if (checkForWinner(roundPlayer.token)) {
+                gameFinished = true;
+                onWinEventHandler(roundPlayer);
+            } else if (round === LAST_ROUND) {
+                gameFinished = true;
+                onTieEventHandler();
             }
+
             incrementRound();
         }
     }
@@ -84,3 +84,23 @@ const game = (function (gameBoard, playerOne, playerTwo, onWinEventHandler, onTi
     (player) => console.log(player.name),
     () => console.log('Tie')
 );
+
+const displayController = (function (document, gameBoard, game) {
+    const buttons = [...document.querySelectorAll('.grid-button')];
+
+    for (const button of buttons) {
+        const position = button.getAttribute('id');
+        button.addEventListener('click', () => {
+            game.playRound(position);
+            render();
+        });
+    }
+
+    function render() {
+        const board = gameBoard.getBoard();
+        for (let i = 0; i < board.length; i++) {
+            const token = board[i];
+            buttons[i].textContent = token;
+        }
+    }
+})(document, gameBoard, game);

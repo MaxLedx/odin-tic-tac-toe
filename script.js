@@ -9,6 +9,10 @@ const gameBoard = (function () {
         return position >= 0 && position < board.length - 1;
     }
 
+    function getBoard() {
+        return [...board];
+    }
+
     function getTokenAtOrDefault(position) {
         return isWithinBounds(position) ? board[position] : null;
     }
@@ -21,7 +25,7 @@ const gameBoard = (function () {
         return true;
     }
 
-    return { getTokenAtOrDefault, trySetTokenAt };
+    return { getBoard, getTokenAtOrDefault, trySetTokenAt };
 })();
 
 const game = (function (gameBoard, playerOne, playerTwo, onWinEventHandler, onTieEventHandler) {
